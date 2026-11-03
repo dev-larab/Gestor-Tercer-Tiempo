@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.font-rugby {
+  font-family: 'Oswald', 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: 0.025em;
+}
+
+/* Custom scrollbar for dense tables/lists on club tablets */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0f1412;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #23342d;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}

@@ -1,0 +1,142 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Inventory product item in the rugby club bar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "category": { 
+          "type": "string", 
+          "enum": ["bebidas", "comida", "hielo", "snacks", "menaje", "limpieza", "otros"] 
+        },
+        "currentStock": { "type": "number" },
+        "minStock": { "type": "number" },
+        "unit": { "type": "string", "maxLength": 60 },
+        "supplierId": { "type": "string", "maxLength": 128 },
+        "costPerUnit": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 500 },
+        "updatedAt": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["id", "name", "category", "currentStock", "minStock", "unit"]
+    },
+    "Supplier": {
+      "title": "Supplier",
+      "description": "Beverage and food supplier for the club bar",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 150 },
+        "contactPerson": { "type": "string", "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 40 },
+        "email": { "type": "string", "maxLength": 120 },
+        "notes": { "type": "string", "maxLength": 500 },
+        "address": { "type": "string", "maxLength": 200 }
+      },
+      "required": ["id", "name"]
+    },
+    "RugbyEvent": {
+      "title": "RugbyEvent",
+      "description": "Rugby matches, tournaments, and social events with rival and organization notes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "title": { "type": "string", "maxLength": 200 },
+        "rival": { "type": "string", "maxLength": 150 },
+        "teamCategory": { "type": "string", "maxLength": 100 },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "location": { "type": "string", "maxLength": 150 },
+        "type": {
+          "type": "string",
+          "enum": ["partido_local", "partido_visitante", "torneo_seven", "celebracion", "amistoso", "escuela"]
+        },
+        "expectedAttendees": { "type": "number" },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "checklist": { "type": "array" },
+        "isCompleted": { "type": "boolean" },
+        "localPlayers": { "type": "number" },
+        "visitorPlayers": { "type": "number" },
+        "localStaff": { "type": "number" },
+        "visitorStaff": { "type": "number" }
+      },
+      "required": ["id", "title", "teamCategory", "date", "time", "location", "type"]
+    },
+    "StockLog": {
+      "title": "StockLog",
+      "description": "Audit log entry of stock movements and reasons",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "productId": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 150 },
+        "change": { "type": "number" },
+        "newStock": { "type": "number" },
+        "reason": { "type": "string", "maxLength": 300 },
+        "timestamp": { "type": "string", "maxLength": 60 }
+      },
+      "required": ["id", "productId", "productName", "change", "newStock", "reason", "timestamp"]
+    },
+    "ShiftClosure": {
+      "title": "ShiftClosure",
+      "description": "End-of-shift record with revenue, cleaning checklist, keys, and responsible name",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "date": { "type": "string", "maxLength": 30 },
+        "time": { "type": "string", "maxLength": 20 },
+        "timestamp": { "type": "string", "maxLength": 60 },
+        "revenue": { "type": "number" },
+        "cleaningCompleted": { "type": "boolean" },
+        "keysReturned": { "type": "boolean" },
+        "responsibleName": { "type": "string", "maxLength": 120 },
+        "comments": { "type": "string", "maxLength": 1000 },
+        "userId": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "date", "time", "timestamp", "revenue", "cleaningCompleted", "keysReturned", "responsibleName"]
+    },
+    "User": {
+      "title": "User",
+      "description": "Club user account profile and role",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "username": { "type": "string", "maxLength": 80 },
+        "password": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["admin", "staff"] },
+        "roleLabel": { "type": "string", "maxLength": 80 },
+        "badge": { "type": "string", "maxLength": 80 },
+        "avatarColor": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "username", "name", "role", "roleLabel"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Bar inventory products"
+    },
+    "/suppliers/{supplierId}": {
+      "schema": "Supplier",
+      "description": "Suppliers directory"
+    },
+    "/events/{eventId}": {
+      "schema": "RugbyEvent",
+      "description": "Matches and third half events"
+    },
+    "/logs/{logId}": {
+      "schema": "StockLog",
+      "description": "Inventory movement audit log"
+    },
+    "/closures/{closureId}": {
+      "schema": "ShiftClosure",
+      "description": "Shift closure records with revenue and checklist"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Club user accounts and credentials"
+    }
+  }
+}

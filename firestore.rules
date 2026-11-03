@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isPrimaryAdmin() {
+      return isSignedIn() && request.auth.token.email == 'borja.lara.lopez@gmail.com';
+    }
+
+    function isValidProduct(data) {
+      return data.keys().hasAll(['id', 'name', 'category', 'currentStock', 'minStock', 'unit']) &&
+             data.keys().hasOnly(['id', 'name', 'category', 'currentStock', 'minStock', 'unit', 'supplierId', 'costPerUnit', 'notes', 'updatedAt']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             data.category in ['bebidas', 'comida', 'hielo', 'snacks', 'menaje', 'limpieza', 'otros'] &&
+             data.currentStock is number &&
+             data.minStock is number &&
+             data.unit is string && data.unit.size() <= 60 &&
+             (!('supplierId' in data) || (data.supplierId is string && data.supplierId.size() <= 128)) &&
+             (!('costPerUnit' in data) || data.costPerUnit is number) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 500)) &&
+             (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 60));
+    }
+
+    function isValidSupplier(data) {
+      return data.keys().hasAll(['id', 'name']) &&
+             data.keys().hasOnly(['id', 'name', 'contactPerson', 'phone', 'email', 'notes', 'address']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 150 &&
+             (!('contactPerson' in data) || (data.contactPerson is string && data.contactPerson.size() <= 120)) &&
+             (!('phone' in data) || (data.phone is string && data.phone.size() <= 40)) &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 120)) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 500)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 200));
+    }
+
+    function isValidEvent(data) {
+      return data.keys().hasAll(['id', 'title', 'teamCategory', 'date', 'time', 'location', 'type']) &&
+             data.keys().hasOnly(['id', 'title', 'rival', 'teamCategory', 'date', 'time', 'location', 'type', 'expectedAttendees', 'notes', 'checklist', 'isCompleted', 'localPlayers', 'visitorPlayers', 'localStaff', 'visitorStaff']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             (!('rival' in data) || (data.rival is string && data.rival.size() <= 150)) &&
+             data.teamCategory is string && data.teamCategory.size() <= 100 &&
+             data.date is string && data.date.size() <= 30 &&
+             data.time is string && data.time.size() <= 20 &&
+             data.location is string && data.location.size() <= 150 &&
+             data.type in ['partido_local', 'partido_visitante', 'torneo_seven', 'celebracion', 'amistoso', 'escuela'] &&
+             (!('expectedAttendees' in data) || data.expectedAttendees is number) &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
+             (!('checklist' in data) || data.checklist is list) &&
+             (!('isCompleted' in data) || data.isCompleted is bool) &&
+             (!('localPlayers' in data) || data.localPlayers is number) &&
+             (!('visitorPlayers' in data) || data.visitorPlayers is number) &&
+             (!('localStaff' in data) || data.localStaff is number) &&
+             (!('visitorStaff' in data) || data.visitorStaff is number);
+    }
+
+    function isValidStockLog(data) {
+      return data.keys().hasAll(['id', 'productId', 'productName', 'change', 'newStock', 'reason', 'timestamp']) &&
+             data.keys().hasOnly(['id', 'productId', 'productName', 'change', 'newStock', 'reason', 'timestamp']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.productId is string && data.productId.size() <= 128 &&
+             data.productName is string && data.productName.size() <= 150 &&
+             data.change is number &&
+             data.newStock is number &&
+             data.reason is string && data.reason.size() <= 300 &&
+             data.timestamp is string && data.timestamp.size() <= 60;
+    }
+
+    function isValidShiftClosure(data) {
+      return data.keys().hasAll(['id', 'date', 'time', 'timestamp', 'revenue', 'cleaningCompleted', 'keysReturned', 'responsibleName']) &&
+             data.keys().hasOnly(['id', 'date', 'time', 'timestamp', 'revenue', 'cleaningCompleted', 'keysReturned', 'responsibleName', 'comments', 'userId']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.date is string && data.date.size() <= 30 &&
+             data.time is string && data.time.size() <= 20 &&
+             data.timestamp is string && data.timestamp.size() <= 60 &&
+             data.revenue is number && data.revenue >= 0 &&
+             data.cleaningCompleted is bool &&
+             data.keysReturned is bool &&
+             data.responsibleName is string && data.responsibleName.size() > 0 && data.responsibleName.size() <= 120 &&
+             (!('comments' in data) || (data.comments is string && data.comments.size() <= 1000)) &&
+             (!('userId' in data) || (data.userId is string && data.userId.size() <= 128));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['id', 'username', 'name', 'role', 'roleLabel']) &&
+             data.keys().hasOnly(['id', 'username', 'password', 'name', 'role', 'roleLabel', 'badge', 'avatarColor']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.username is string && data.username.size() > 0 && data.username.size() <= 80 &&
+             (!('password' in data) || (data.password is string && data.password.size() <= 100)) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
+             data.role in ['admin', 'staff'] &&
+             data.roleLabel is string && data.roleLabel.size() <= 80 &&
+             (!('badge' in data) || (data.badge is string && data.badge.size() <= 80)) &&
+             (!('avatarColor' in data) || (data.avatarColor is string && data.avatarColor.size() <= 50));
+    }
+
+    // Health check & connection validation path
+    match /test/{testId} {
+      allow get, write: if isValidId(testId);
+      allow list: if true;
+    }
+
+    // Bar products inventory
+    match /products/{productId} {
+      allow get: if isValidId(productId);
+      allow list: if true;
+      allow create: if isValidId(productId) && isValidProduct(incoming());
+      allow update: if isValidId(productId) && isValidProduct(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(productId);
+    }
+
+    // Suppliers directory
+    match /suppliers/{supplierId} {
+      allow get: if isValidId(supplierId);
+      allow list: if true;
+      allow create: if isValidId(supplierId) && isValidSupplier(incoming());
+      allow update: if isValidId(supplierId) && isValidSupplier(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(supplierId);
+    }
+
+    // Rugby events & matches
+    match /events/{eventId} {
+      allow get: if isValidId(eventId);
+      allow list: if true;
+      allow create: if isValidId(eventId) && isValidEvent(incoming());
+      allow update: if isValidId(eventId) && isValidEvent(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(eventId);
+    }
+
+    // Inventory logs (immutable audit log)
+    match /logs/{logId} {
+      allow get: if isValidId(logId);
+      allow list: if true;
+      allow create: if isValidId(logId) && isValidStockLog(incoming());
+      allow update, delete: if false;
+    }
+
+    // Shift closures (Cierre de jornada)
+    match /closures/{closureId} {
+      allow get: if isValidId(closureId);
+      allow list: if true;
+      allow create: if isValidId(closureId) && isValidShiftClosure(incoming());
+      allow update: if isValidId(closureId) && isValidShiftClosure(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(closureId);
+    }
+
+    // Club user accounts
+    match /users/{userId} {
+      allow get: if isValidId(userId);
+      allow list: if true;
+      allow create: if isValidId(userId) && isValidUser(incoming());
+      allow update: if isValidId(userId) && isValidUser(incoming()) && incoming().id == existing().id;
+      allow delete: if isValidId(userId);
+    }
+  }
+}

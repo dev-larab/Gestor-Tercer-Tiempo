@@ -1,0 +1,6 @@
+{
+  "name": "La Única RT - Tercer Tiempo",
+  "description": "Gestión de inventario, stock, proveedores y calendario de terceros tiempos para La Única Rugby Taldea.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
