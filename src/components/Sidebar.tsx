@@ -245,7 +245,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 1. DESKTOP VERTICAL SIDEBAR (collapsible / expandable) */}
       {/* ============================================================== */}
       <aside 
-        className={`hidden lg:flex flex-col shrink-0 sticky top-20 self-start h-[calc(100vh-5rem)] bg-[#0c120f]/95 border-r border-emerald-950/70 transition-all duration-300 ease-in-out select-none z-30 ${
+        className={`hidden lg:flex flex-col shrink-0 sticky top-20 self-start h-[calc(100vh-5rem)] backdrop-blur-md bg-[#0c120f]/85 border-r border-emerald-950/70 transition-all duration-300 ease-in-out select-none z-30 ${
           isCollapsed ? 'w-20' : 'w-64 xl:w-72'
         }`}
       >

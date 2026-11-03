@@ -16,8 +16,11 @@ import {
   Crown,
   Clock,
   ChevronRight,
-  Cloud
+  Cloud,
+  Sparkles
 } from 'lucide-react';
+import { DynamicBackground } from './DynamicBackground';
+
 
 interface LoginViewProps {
   onLogin: (user: User) => void;
@@ -157,11 +160,9 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
   return (
     <div className="min-h-screen bg-[#070b09] text-zinc-100 flex flex-col justify-center items-center p-4 relative overflow-hidden selection:bg-emerald-500 selection:text-black">
-      {/* Decorative Rugby Pitch Background Accents */}
-      <div className="absolute inset-0 pointer-events-none opacity-20">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-emerald-600/15 rounded-full blur-[140px]" />
-        <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-emerald-700/10 rounded-full blur-[100px]" />
-      </div>
+      {/* Dynamic atmospheric moving background (aurora, pitch geometry & light mist) */}
+      <DynamicBackground intensity="full" />
+
 
       <div className="w-full max-w-md relative z-10">
         {/* Club Brand Shield & Header */}

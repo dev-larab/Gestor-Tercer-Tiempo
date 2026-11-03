@@ -27,3 +27,249 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #10b981;
 }
+
+/* Dynamic Stadium Background Animations */
+@keyframes aurora-drift-1 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate3d(80px, 60px, 0) scale(1.15) rotate(10deg);
+  }
+  66% {
+    transform: translate3d(-40px, 110px, 0) scale(0.92) rotate(-6deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes aurora-drift-2 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+  40% {
+    transform: translate3d(-90px, -70px, 0) scale(1.18) rotate(-12deg);
+  }
+  75% {
+    transform: translate3d(50px, -30px, 0) scale(0.9) rotate(8deg);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes aurora-drift-3 {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  50% {
+    transform: translate3d(60px, -80px, 0) scale(1.22);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+}
+
+@keyframes aurora-breathe {
+  0%, 100% {
+    opacity: 0.18;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: translate3d(-50%, 25px, 0) scale(1.12);
+  }
+}
+
+@keyframes field-sweep {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  50%, 100% {
+    transform: translate3d(200%, 0, 0);
+  }
+}
+
+.animate-aurora-drift-1 {
+  animation: aurora-drift-1 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.animate-aurora-drift-2 {
+  animation: aurora-drift-2 32s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.animate-aurora-drift-3 {
+  animation: aurora-drift-3 22s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.animate-aurora-breathe {
+  animation: aurora-breathe 14s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+.animate-field-sweep {
+  animation: field-sweep 16s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-aurora-drift-1,
+  .animate-aurora-drift-2,
+  .animate-aurora-drift-3,
+  .animate-aurora-breathe,
+  .animate-field-sweep,
+  .bubble {
+    animation: none !important;
+  }
+}
+
+/* ============================================================== */
+/* From Uiverse.io by Dennyhml - Realistic 3D Glass Bubbles */
+/* ============================================================== */
+.bubble {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 25px rgba(255, 255, 255, 0.25);
+  animation: animate_4010 8s ease-in-out infinite;
+}
+
+.bubble:nth-child(2) {
+  position: relative;
+  zoom: 0.45;
+  left: -10px;
+  top: -100px;
+  animation-delay: -4s;
+}
+
+.bubble:nth-child(3) {
+  position: relative;
+  zoom: 0.45;
+  right: -80px;
+  top: -300px;
+  animation-delay: -6s;
+}
+
+.bubble:nth-child(4) {
+  position: relative;
+  zoom: 0.35;
+  left: -120px;
+  bottom: -200px;
+  animation-delay: -3s;
+}
+
+.bubble:nth-child(5) {
+  position: relative;
+  zoom: 0.5;
+  left: 0px;
+  top: 200px;
+  animation-delay: -5s;
+}
+
+@keyframes animate_4010 {
+  0%,100% {
+    transform: translateY(-20px);
+  }
+
+  50% {
+    transform: translateY(20px);
+  }
+}
+
+.bubble::before {
+  content: '';
+  position: absolute;
+  top: 50px;
+  left: 45px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #fff;
+  z-index: 10;
+  filter: blur(2px);
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  top: 80px;
+  left: 80px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  z-index: 10;
+  filter: blur(2px);
+}
+
+.bubble span {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.bubble span:nth-child(1) {
+  inset: 10px;
+  border-left: 15px solid #0fb4ff;
+  filter: blur(8px);
+}
+
+.bubble span:nth-child(2) {
+  inset: 10px;
+  border-right: 15px solid #ff4484;
+  filter: blur(8px);
+}
+
+.bubble span:nth-child(3) {
+  inset: 10px;
+  border-top: 15px solid #ffeb3b;
+  filter: blur(8px);
+}
+
+.bubble span:nth-child(4) {
+  inset: 30px;
+  border-left: 15px solid #ff4484;
+  filter: blur(12px);
+}
+
+.bubble span:nth-child(5) {
+  inset: 10px;
+  border-bottom: 10px solid #fff;
+  filter: blur(8px);
+  transform: rotate(330deg);
+}
+
+/* Cluster gentle ambient drift across viewport */
+@keyframes cluster-drift-a {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(35px, -45px, 0) rotate(6deg);
+  }
+}
+
+@keyframes cluster-drift-b {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(-40px, 35px, 0) rotate(-8deg);
+  }
+}
+
+.animate-cluster-drift-a {
+  animation: cluster-drift-a 24s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-cluster-drift-b {
+  animation: cluster-drift-b 28s ease-in-out infinite;
+  will-change: transform;
+}
+
+

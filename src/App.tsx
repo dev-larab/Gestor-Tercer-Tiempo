@@ -30,7 +30,9 @@ import {
   saveStoredClosures
 } from './utils/storage';
 import { Product, Supplier, RugbyEvent, StockLog, User, ShiftClosure, TabType } from './types';
-import { Check, ShieldCheck } from 'lucide-react';
+import { Check, ShieldCheck, Sparkles } from 'lucide-react';
+import { DynamicBackground } from './components/DynamicBackground';
+
 import {
   seedInitialFirestoreData,
   subscribeToProducts,
@@ -76,6 +78,30 @@ export default function App() {
     }
   });
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Dynamic atmospheric background intensity ('full' | 'subtle' | 'minimal')
+  const [bgIntensity, setBgIntensity] = useState<'full' | 'subtle' | 'minimal'>(() => {
+    try {
+      const saved = localStorage.getItem('lurt_bg_intensity');
+      if (saved === 'full' || saved === 'subtle' || saved === 'minimal') return saved;
+    } catch {
+      // default
+    }
+    return 'full';
+  });
+
+  const handleToggleBgIntensity = useCallback(() => {
+    setBgIntensity(prev => {
+      const next = prev === 'full' ? 'subtle' : prev === 'subtle' ? 'minimal' : 'full';
+      try {
+        localStorage.setItem('lurt_bg_intensity', next);
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
+
 
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarCollapsed((prev) => {
@@ -635,9 +661,14 @@ export default function App() {
   const lowStockCount = products.filter(p => p.currentStock < p.minStock).length;
 
   return (
-    <div className="min-h-screen bg-[#0a0e0c] text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
-      {/* Club Header (Brand, Quick Bar, Reset, User profile, Sidebar toggle) */}
-      <Header
+    <div className="min-h-screen bg-[#070b09] text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black relative">
+      {/* Dynamic atmospheric moving background (aurora, pitch geometry & light mist) */}
+      <DynamicBackground intensity={bgIntensity} />
+
+      <div className="relative z-10 flex flex-col min-h-screen">
+        {/* Club Header (Brand, Quick Bar, Reset, User profile, Sidebar toggle) */}
+        <Header
+
         onToggleSidebarCollapse={handleToggleSidebar}
         isSidebarCollapsed={isSidebarCollapsed}
         onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
@@ -747,13 +778,28 @@ export default function App() {
                 <span>Herria, Taldea, Erresua</span>
               </div>
 
-              <div className="flex items-center gap-4 text-[11px] text-zinc-400">
+              <div className="flex flex-wrap items-center gap-3 text-[11px] text-zinc-400">
                 <span>Sede Polideportivo UPNA, Pamplona / Iruña</span>
                 <span>•</span>
                 <span className="text-emerald-400 flex items-center gap-1 font-medium">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Almacenamiento Local & Nube Activo
                 </span>
+                <span>•</span>
+                <button
+                  type="button"
+                  onClick={handleToggleBgIntensity}
+                  title="Cambiar intensidad del efecto dinámico de fondo (Dinámico / Suave / Estático)"
+                  className="px-2.5 py-1 rounded-lg bg-emerald-950/70 hover:bg-emerald-900/70 border border-emerald-800/60 text-emerald-300 hover:text-white transition-all flex items-center gap-1.5 cursor-pointer text-[11px]"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>
+                    Fondo:{' '}
+                    <strong className="text-emerald-200">
+                      {bgIntensity === 'full' ? 'Dinámico ✦' : bgIntensity === 'subtle' ? 'Suave' : 'Estático'}
+                    </strong>
+                  </span>
+                </button>
               </div>
             </div>
           </footer>
@@ -789,6 +835,7 @@ export default function App() {
           </span>
         </div>
       )}
+      </div>
     </div>
   );
 }
