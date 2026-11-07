@@ -79,6 +79,7 @@ export interface User {
   id: string;
   username: string;
   password?: string;
+  passwordHash?: string;
   name: string;
   role: UserRole;
   roleLabel: string;

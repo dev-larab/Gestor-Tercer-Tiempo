@@ -104,6 +104,7 @@
         "id": { "type": "string", "maxLength": 128 },
         "username": { "type": "string", "maxLength": 80 },
         "password": { "type": "string", "maxLength": 100 },
+        "passwordHash": { "type": "string", "maxLength": 128 },
         "name": { "type": "string", "maxLength": 120 },
         "role": { "type": "string", "enum": ["admin", "staff"] },
         "roleLabel": { "type": "string", "maxLength": 80 },

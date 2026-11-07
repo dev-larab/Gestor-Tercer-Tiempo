@@ -10,8 +10,10 @@ import {
   Trash2, 
   Check, 
   KeyRound, 
-  AlertCircle 
+  AlertCircle,
+  Lock
 } from 'lucide-react';
+import { hashPassword } from '../utils/security';
 
 interface UserManagementModalProps {
   isOpen: boolean;
@@ -20,6 +22,7 @@ interface UserManagementModalProps {
   users: User[];
   onAddUser: (user: User) => void;
   onDeleteUser: (userId: string) => void;
+  onUpdateUser?: (user: User) => void;
 }
 
 export const UserManagementModal: React.FC<UserManagementModalProps> = ({
@@ -29,6 +32,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
   users,
   onAddUser,
   onDeleteUser,
+  onUpdateUser,
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newUsername, setNewUsername] = useState('');
@@ -37,11 +41,17 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
   const [newRole, setNewRole] = useState<UserRole>('staff');
   const [error, setError] = useState<string | null>(null);
 
+  // State for changing password of existing users
+  const [editingPasswordUserId, setEditingPasswordUserId] = useState<string | null>(null);
+  const [editPasswordValue, setEditPasswordValue] = useState('');
+  const [editPasswordSuccess, setEditPasswordSuccess] = useState<string | null>(null);
+
+
   if (!isOpen) return null;
 
   const isAdmin = currentUser.role === 'admin';
 
-  const handleCreateUser = (e: React.FormEvent) => {
+  const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -59,10 +69,13 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
       return;
     }
 
+    // Compute secure SHA-256 hash before storage
+    const passwordHash = await hashPassword(cleanPassword);
+
     const newUser: User = {
       id: generateId('user'),
       username: cleanUsername,
-      password: cleanPassword,
+      passwordHash,
       name: cleanName,
       role: newRole,
       roleLabel: newRole === 'admin' ? 'Administrador' : 'Responsable de Turno',
@@ -75,6 +88,27 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
     setNewPassword('');
     setNewName('');
     setShowAddForm(false);
+  };
+
+  const handleSaveNewPassword = async (userId: string) => {
+    const cleanPass = editPasswordValue.trim();
+    if (!cleanPass) return;
+
+    const targetUser = users.find(u => u.id === userId);
+    if (!targetUser) return;
+
+    const hash = await hashPassword(cleanPass);
+    const updatedUser: User = {
+      ...targetUser,
+      passwordHash: hash,
+    };
+    delete updatedUser.password;
+
+    onUpdateUser?.(updatedUser);
+    setEditingPasswordUserId(null);
+    setEditPasswordValue('');
+    setEditPasswordSuccess(`Contraseña de @${targetUser.username} actualizada con hash SHA-256`);
+    setTimeout(() => setEditPasswordSuccess(null), 3500);
   };
 
   return (
@@ -256,6 +290,14 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
               </form>
             )}
 
+            {/* Success toast for password updates */}
+            {editPasswordSuccess && (
+              <div className="mb-3 p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 text-xs flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{editPasswordSuccess}</span>
+              </div>
+            )}
+
             {/* List */}
             <div className="space-y-2">
               {users.map((u) => {
@@ -263,10 +305,9 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                 const isCurrent = u.id === currentUser.id;
 
                 return (
-                  <div
-                    key={u.id}
-                    className="p-3 rounded-xl bg-[#111914] border border-emerald-950/80 flex items-center justify-between hover:border-emerald-800/40 transition-colors"
-                  >
+                  <div key={u.id} className="space-y-1.5">
+                    <div className="p-3 rounded-xl bg-[#111914] border border-emerald-950/80 flex items-center justify-between hover:border-emerald-800/40 transition-colors">
+
                     <div className="flex items-center gap-3">
                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs text-white ${
                         u.role === 'admin' ? 'bg-amber-600' : 'bg-emerald-700'
@@ -297,8 +338,29 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         {u.role === 'admin' ? 'Admin' : 'Responsable'}
                       </span>
 
+                      {/* Admin action: Change password */}
+                      {isAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPasswordUserId(editingPasswordUserId === u.id ? null : u.id);
+                            setEditPasswordValue('');
+                          }}
+                          className={`p-1.5 rounded transition-colors ${
+                            editingPasswordUserId === u.id 
+                              ? 'text-emerald-300 bg-emerald-950/80 border border-emerald-700/60'
+                              : 'text-zinc-400 hover:text-emerald-300 hover:bg-emerald-950/60'
+                          }`}
+                          title="Cambiar contraseña de este usuario"
+                        >
+                          <KeyRound className="w-4 h-4" />
+                        </button>
+                      )}
+
+                      {/* Admin action: Delete non-admin user */}
                       {isAdmin && !isItemAdmin && !isCurrent && (
                         <button
+                          type="button"
                           onClick={() => onDeleteUser(u.id)}
                           className="p-1.5 text-zinc-400 hover:text-rose-400 hover:bg-rose-950/40 rounded transition-colors"
                           title="Eliminar usuario"
@@ -307,6 +369,41 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
                         </button>
                       )}
                     </div>
+                  </div>
+
+                  {/* Inline Change Password Box */}
+                  {editingPasswordUserId === u.id && (
+                    <div className="p-3 rounded-xl bg-[#14221b] border border-emerald-700/60 flex flex-col sm:flex-row items-center gap-2 animate-in fade-in duration-150">
+                      <div className="flex-1 w-full flex items-center gap-2">
+                        <Lock className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <input
+                          type="text"
+                          value={editPasswordValue}
+                          onChange={(e) => setEditPasswordValue(e.target.value)}
+                          placeholder={`Nueva contraseña para @${u.username}`}
+                          className="w-full bg-[#0d1612] border border-emerald-800/60 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-emerald-500 font-mono"
+                          autoFocus
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                        <button
+                          type="button"
+                          onClick={() => setEditingPasswordUserId(null)}
+                          className="px-2.5 py-1 text-xs text-zinc-400 hover:text-white rounded bg-zinc-800"
+                        >
+                          Cancelar
+                        </button>
+                        <button
+                          type="button"
+                          disabled={!editPasswordValue.trim()}
+                          onClick={() => handleSaveNewPassword(u.id)}
+                          className="px-3 py-1 text-xs font-bold text-black bg-emerald-400 hover:bg-emerald-300 disabled:opacity-50 disabled:cursor-not-allowed rounded shadow"
+                        >
+                          Guardar Hash SHA-256
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   </div>
                 );
               })}

@@ -20,6 +20,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import { DynamicBackground } from './DynamicBackground';
+import { verifyUserPassword } from '../utils/security';
+
 
 
 interface LoginViewProps {
@@ -87,7 +89,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
@@ -101,31 +103,31 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      let users = loadStoredUsers();
-
-      // Look for user matching entered credentials
-      let foundUser = users.find(
-        (u) => u.username.toLowerCase() === cleanUsername && u.password === cleanPassword
-      );
-
-      // Robust fallback for 'resp' or 'responsable' with Lurt1*
-      if (!foundUser && cleanPassword === 'Lurt1*' && (cleanUsername === 'resp' || cleanUsername === 'responsable')) {
-        const respUser = users.find(u => u.username === 'resp' || u.username === 'responsable' || u.role === 'staff');
-        if (respUser) {
-          foundUser = { ...respUser, password: 'Lurt1*' };
-        } else {
-          foundUser = { ...INITIAL_USERS[1], password: 'Lurt1*' };
+    try {
+      const storedUsers = loadStoredUsers();
+      // Combine stored users with initial default users
+      const allCandidateUsers = [...storedUsers];
+      for (const initU of INITIAL_USERS) {
+        if (!allCandidateUsers.some((u) => u.username.toLowerCase() === initU.username.toLowerCase())) {
+          allCandidateUsers.push(initU);
         }
       }
 
-      // Robust fallback for admin with Lurt@dmin1
-      if (!foundUser && cleanPassword === 'Lurt@dmin1' && cleanUsername === 'admin') {
-        const adminUser = users.find(u => u.username === 'admin' || u.role === 'admin');
-        if (adminUser) {
-          foundUser = { ...adminUser, password: 'Lurt@dmin1' };
-        } else {
-          foundUser = { ...INITIAL_USERS[0], password: 'Lurt@dmin1' };
+      // Filter candidates matching username (including aliases 'resp' / 'responsable')
+      const matchingCandidates = allCandidateUsers.filter((u) => {
+        const uName = u.username.toLowerCase();
+        if (cleanUsername === 'resp' || cleanUsername === 'responsable') {
+          return uName === 'resp' || uName === 'responsable';
+        }
+        return uName === cleanUsername;
+      });
+
+      let foundUser: User | null = null;
+      for (const candidate of matchingCandidates) {
+        const isValid = await verifyUserPassword(cleanPassword, candidate);
+        if (isValid) {
+          foundUser = candidate;
+          break;
         }
       }
 
@@ -155,7 +157,11 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
             : 'Usuario o contraseña de Responsable de Turno incorrectos.'
         );
       }
-    }, 250);
+    } catch (err) {
+      console.error('Error verifying login credentials:', err);
+      setIsLoading(false);
+      setErrorMessage('Ocurrió un error al verificar las credenciales.');
+    }
   };
 
   return (

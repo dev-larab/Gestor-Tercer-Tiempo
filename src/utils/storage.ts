@@ -18,25 +18,33 @@ export function loadStoredUsers(): User[] {
       let parsed: User[] = JSON.parse(raw);
       let updated = false;
 
-      // Ensure the admin with Lurt@dmin1 is always present and updated
+      // Ensure the admin user is always present and has secure passwordHash
       const adminIdx = parsed.findIndex(u => u.username === 'admin');
       if (adminIdx === -1) {
         parsed.unshift(INITIAL_USERS[0]);
         updated = true;
       } else {
-        parsed[adminIdx].password = 'Lurt@dmin1';
+        if (!parsed[adminIdx].passwordHash) {
+          parsed[adminIdx].passwordHash = INITIAL_USERS[0].passwordHash;
+          delete parsed[adminIdx].password;
+          updated = true;
+        }
         parsed[adminIdx].role = 'admin';
         parsed[adminIdx].roleLabel = 'Administrador';
       }
 
-      // Ensure the responsable with Lurt1* is always present and updated
-      const respIdx = parsed.findIndex(u => u.username === 'responsable');
+      // Ensure the responsable user is always present and has secure passwordHash
+      const respIdx = parsed.findIndex(u => u.username === 'resp' || u.username === 'responsable');
       if (respIdx === -1) {
         parsed.push(INITIAL_USERS[1]);
         updated = true;
       } else {
-        parsed[respIdx].password = 'Lurt1*';
-        parsed[respIdx].name = 'Responsable de Turno';
+        if (!parsed[respIdx].passwordHash) {
+          parsed[respIdx].passwordHash = INITIAL_USERS[1].passwordHash;
+          delete parsed[respIdx].password;
+          updated = true;
+        }
+        parsed[respIdx].name = parsed[respIdx].name || 'Responsable de Turno';
         parsed[respIdx].role = 'staff';
         parsed[respIdx].roleLabel = 'Responsable de Turno';
         parsed[respIdx].badge = 'Responsable de Turno';
@@ -84,9 +92,10 @@ export function loadCurrentUser(): User | null {
 export function saveCurrentUser(user: User | null): void {
   try {
     if (user) {
-      // do not store plain password in active session state if not needed
+      // do not store plain password or hash in active session state
       const safeUser = { ...user };
       delete safeUser.password;
+      delete safeUser.passwordHash;
       localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(safeUser));
     } else {
       localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);

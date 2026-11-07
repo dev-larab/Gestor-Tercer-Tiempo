@@ -104,10 +104,11 @@ service cloud.firestore {
 
     function isValidUser(data) {
       return data.keys().hasAll(['id', 'username', 'name', 'role', 'roleLabel']) &&
-             data.keys().hasOnly(['id', 'username', 'password', 'name', 'role', 'roleLabel', 'badge', 'avatarColor']) &&
+             data.keys().hasOnly(['id', 'username', 'password', 'passwordHash', 'name', 'role', 'roleLabel', 'badge', 'avatarColor']) &&
              data.id is string && data.id.size() <= 128 &&
              data.username is string && data.username.size() > 0 && data.username.size() <= 80 &&
              (!('password' in data) || (data.password is string && data.password.size() <= 100)) &&
+             (!('passwordHash' in data) || (data.passwordHash is string && data.passwordHash.size() <= 128)) &&
              data.name is string && data.name.size() > 0 && data.name.size() <= 120 &&
              data.role in ['admin', 'staff'] &&
              data.roleLabel is string && data.roleLabel.size() <= 80 &&

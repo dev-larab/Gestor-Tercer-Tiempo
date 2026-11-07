@@ -4,7 +4,7 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'user-admin',
     username: 'admin',
-    password: 'Lurt@dmin1',
+    passwordHash: '9fc5b3a4f4aa3574f293fd23577d2f15361bdc53127564c52d23a5c24f9b46f8', // SHA-256
     name: 'Administrador LURT',
     role: 'admin',
     roleLabel: 'Administrador',
@@ -14,7 +14,7 @@ export const INITIAL_USERS: User[] = [
   {
     id: 'user-responsable',
     username: 'resp',
-    password: 'Lurt1*',
+    passwordHash: 'ecc04117663f820e3a23519d1c487c887dce9542ef44bada76eb052080f192c0', // SHA-256
     name: 'Responsable de Turno',
     role: 'staff',
     roleLabel: 'Responsable de Turno',

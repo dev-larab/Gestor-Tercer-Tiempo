@@ -291,6 +291,16 @@ export default function App() {
     showToast('Usuario eliminado');
   }, [showToast]);
 
+  const handleUpdateUser = useCallback((updatedUser: User) => {
+    setUsers((prev) => {
+      const updated = prev.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+      saveStoredUsers(updated);
+      saveUserToFirestore(updatedUser).catch(console.error);
+      return updated;
+    });
+    showToast(`Usuario @${updatedUser.username} actualizado`);
+  }, [showToast]);
+
   // Quick stock update (+ / -)
   const handleQuickUpdateStock = useCallback((productId: string, delta: number, reason: string) => {
     const targetProduct = products.find((p) => p.id === productId);
@@ -822,6 +832,7 @@ export default function App() {
         users={users}
         onAddUser={handleAddUser}
         onDeleteUser={handleDeleteUser}
+        onUpdateUser={handleUpdateUser}
       />
 
       {/* Action Toast Notification */}
