@@ -10,9 +10,10 @@ import {
   ChevronDown,
   ClipboardCheck,
   Cloud,
-  Zap,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -20,22 +21,24 @@ interface HeaderProps {
   onToggleSidebarCollapse: () => void;
   isSidebarCollapsed: boolean;
   onOpenMobileSidebar: () => void;
-  onOpenQuickBar: () => void;
   onResetData: () => void;
   currentUser: User;
   onLogout: () => void;
   onOpenUserModal: () => void;
+  theme: 'dark' | 'light';
+  onToggleTheme: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onToggleSidebarCollapse,
   isSidebarCollapsed,
   onOpenMobileSidebar,
-  onOpenQuickBar,
   onResetData,
   currentUser,
   onLogout,
-  onOpenUserModal
+  onOpenUserModal,
+  theme,
+  onToggleTheme
 }) => {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -92,8 +95,8 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Rugby Shield Emblem & Club Title */}
             <div className="flex items-center gap-3">
-              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-black p-0.5 shadow-lg shadow-emerald-950/50 transition-transform">
-                <div className="w-full h-full bg-[#0d1310] rounded-[10px] flex items-center justify-center relative overflow-hidden border border-emerald-500/30">
+              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-black p-0.5 shadow-lg shadow-emerald-950/50 transition-transform lurt-crest">
+                <div className="w-full h-full bg-[#0d1310] rounded-[10px] flex items-center justify-center relative overflow-hidden border border-emerald-500/30 lurt-crest">
                   {/* Rugby Ball Visual in Green & Black */}
                   <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/20 via-transparent to-black" />
                   <svg 
@@ -137,16 +140,26 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Right Action buttons & User profile */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Quick Bar Mode Button (Special for club matchdays) */}
+            {/* Dark / Light Mode Toggle Button (Available for all user profiles) */}
             <button
-              id="btn-quick-bar-mode"
-              onClick={onOpenQuickBar}
-              className="flex items-center gap-1.5 px-3 py-2 sm:px-3.5 sm:py-2 text-xs sm:text-sm font-semibold text-emerald-950 bg-emerald-400 hover:bg-emerald-300 active:scale-95 transition-all rounded-xl shadow-lg shadow-emerald-500/20"
-              title="Modo Rápido de Bar: botones gigantes +/- para registrar consumos durante el partido"
+              id="btn-theme-toggle"
+              type="button"
+              onClick={onToggleTheme}
+              className="flex items-center gap-1.5 px-2.5 py-2 sm:px-3 sm:py-2 rounded-xl bg-[#111915] hover:bg-[#16231c] border border-emerald-900/50 hover:border-emerald-700/60 text-zinc-200 hover:text-emerald-300 transition-all text-xs font-semibold shadow-sm cursor-pointer active:scale-95"
+              title={theme === 'dark' ? 'Cambiar a Modo Claro (Blanco)' : 'Cambiar a Modo Oscuro (Negro)'}
+              aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
             >
-              <Zap className="w-4 h-4 fill-emerald-950" />
-              <span className="hidden sm:inline">Modo Bar Rápido</span>
-              <span className="sm:hidden">Bar</span>
+              {theme === 'dark' ? (
+                <>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span className="hidden md:inline">Modo Claro</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-4 h-4 text-emerald-400" />
+                  <span className="hidden md:inline">Modo Oscuro</span>
+                </>
+              )}
             </button>
 
             {/* Reset / Backup Dropdown button (Admin only action) */}

@@ -89,14 +89,16 @@ service cloud.firestore {
 
     function isValidShiftClosure(data) {
       return data.keys().hasAll(['id', 'date', 'time', 'timestamp', 'revenue', 'cleaningCompleted', 'keysReturned', 'responsibleName']) &&
-             data.keys().hasOnly(['id', 'date', 'time', 'timestamp', 'revenue', 'cleaningCompleted', 'keysReturned', 'responsibleName', 'comments', 'userId']) &&
+             data.keys().hasOnly(['id', 'date', 'time', 'timestamp', 'revenue', 'cleaningCompleted', 'barClosed', 'keysReturned', 'lowStockItems', 'responsibleName', 'comments', 'userId']) &&
              data.id is string && data.id.size() <= 128 &&
              data.date is string && data.date.size() <= 30 &&
              data.time is string && data.time.size() <= 20 &&
              data.timestamp is string && data.timestamp.size() <= 60 &&
              data.revenue is number && data.revenue >= 0 &&
              data.cleaningCompleted is bool &&
+             (!('barClosed' in data) || data.barClosed is bool) &&
              data.keysReturned is bool &&
+             (!('lowStockItems' in data) || (data.lowStockItems is list && data.lowStockItems.size() <= 150)) &&
              data.responsibleName is string && data.responsibleName.size() > 0 && data.responsibleName.size() <= 120 &&
              (!('comments' in data) || (data.comments is string && data.comments.size() <= 1000)) &&
              (!('userId' in data) || (data.userId is string && data.userId.size() <= 128));

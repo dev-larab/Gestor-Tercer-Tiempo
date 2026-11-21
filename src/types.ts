@@ -94,7 +94,9 @@ export interface ShiftClosure {
   timestamp: string; // ISO string
   revenue: number; // Recaudación en euros (€)
   cleaningCompleted: boolean; // Confirmación de limpieza realizada
+  barClosed?: boolean; // Confirmación de cierre del bar (grifos, cámaras, luces, persiana)
   keysReturned: boolean; // Confirmación de devolución de llaves en recepción
+  lowStockItems?: string[]; // Artículos del inventario marcados como stock bajo / reposición
   responsibleName: string; // Nombre del Responsable de turno
   comments?: string; // Comentarios u observaciones de la jornada
   userId?: string;

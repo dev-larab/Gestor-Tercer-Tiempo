@@ -80,7 +80,7 @@
     },
     "ShiftClosure": {
       "title": "ShiftClosure",
-      "description": "End-of-shift record with revenue, cleaning checklist, keys, and responsible name",
+      "description": "End-of-shift record with revenue, cleaning, bar closing, keys checklist, low-stock alerts, and responsible name",
       "type": "object",
       "properties": {
         "id": { "type": "string", "maxLength": 128 },
@@ -89,7 +89,9 @@
         "timestamp": { "type": "string", "maxLength": 60 },
         "revenue": { "type": "number" },
         "cleaningCompleted": { "type": "boolean" },
+        "barClosed": { "type": "boolean" },
         "keysReturned": { "type": "boolean" },
+        "lowStockItems": { "type": "array", "items": { "type": "string" } },
         "responsibleName": { "type": "string", "maxLength": 120 },
         "comments": { "type": "string", "maxLength": 1000 },
         "userId": { "type": "string", "maxLength": 128 }

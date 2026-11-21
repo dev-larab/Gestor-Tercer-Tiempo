@@ -10,7 +10,6 @@ import {
   ChevronRight,
   PanelLeftClose,
   PanelLeftOpen,
-  Zap,
   Users,
   Shield,
   Crown,
@@ -27,7 +26,6 @@ interface SidebarProps {
   onToggleCollapse: () => void;
   isMobileOpen: boolean;
   onCloseMobile: () => void;
-  onOpenQuickBar: () => void;
   onOpenUserModal: () => void;
 }
 
@@ -50,7 +48,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse,
   isMobileOpen,
   onCloseMobile,
-  onOpenQuickBar,
   onOpenUserModal,
 }) => {
   const isAdmin = currentUser.role === 'admin';
@@ -61,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Panel Principal', 
       shortLabel: 'Panel',
       icon: LayoutDashboard,
+      adminOnly: true,
       description: 'Resumen general, stock crítico y próximos eventos'
     },
     { 
@@ -69,6 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       shortLabel: 'Inventario',
       icon: Package, 
       badge: lowStockCount > 0 ? lowStockCount : undefined,
+      adminOnly: true,
       description: 'Control de barriles, bebidas, comida y consumibles'
     },
     { 
@@ -76,7 +75,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Cierre de Jornada', 
       shortLabel: 'Cierre',
       icon: ClipboardCheck,
-      description: 'Arqueo de caja, limpieza y entrega de llaves'
+      description: 'Caja, limpieza, cierre del bar, llaves y avisos de stock bajo'
     },
     { 
       id: 'events', 
@@ -282,28 +281,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Navigation Items List */}
         <div className="flex-1 overflow-y-auto py-1">
           {renderNavButtons(false)}
-
-          {/* Quick bar shortcut inside expanded sidebar */}
-          {!isCollapsed && (
-            <div className="px-3 pt-3 mt-2 border-t border-emerald-950/60">
-              <button
-                onClick={onOpenQuickBar}
-                className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-gradient-to-r from-emerald-950/80 to-emerald-900/50 hover:from-emerald-900/80 hover:to-emerald-800/50 border border-emerald-600/30 text-emerald-300 hover:text-white transition-all group shadow-sm text-left"
-              >
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center shrink-0 border border-emerald-400/30 group-hover:bg-emerald-400 group-hover:text-emerald-950 transition-colors">
-                  <Zap className="w-4 h-4 text-emerald-400 group-hover:text-emerald-950 group-hover:fill-emerald-950 transition-colors" />
-                </div>
-                <div className="min-w-0">
-                  <span className="text-xs font-bold block text-white group-hover:text-emerald-200">
-                    Modo Bar Rápido
-                  </span>
-                  <span className="text-[10px] text-zinc-400 block truncate">
-                    Para días de partido
-                  </span>
-                </div>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Bottom Sidebar Footer / User Info */}
@@ -364,7 +341,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Drawer Header */}
             <div className="p-4 border-b border-emerald-950/80 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-black p-0.5 border border-emerald-500/40 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-600 to-black p-0.5 border border-emerald-500/40 flex items-center justify-center lurt-crest">
                   <span className="font-rugby font-bold text-sm text-white">LU</span>
                 </div>
                 <div>
@@ -399,22 +376,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
 
-            {/* Quick Bar Button in Drawer */}
-            <div className="p-3">
-              <button
-                onClick={() => {
-                  onCloseMobile();
-                  onOpenQuickBar();
-                }}
-                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold bg-emerald-400 text-emerald-950 hover:bg-emerald-300 transition-colors shadow-md shadow-emerald-500/20"
-              >
-                <Zap className="w-4 h-4 fill-emerald-950" />
-                <span>Modo Bar Rápido</span>
-              </button>
-            </div>
-
             {/* Nav list */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto pt-2">
               {renderNavButtons(true)}
             </div>
 

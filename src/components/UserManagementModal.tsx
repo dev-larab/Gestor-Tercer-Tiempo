@@ -416,7 +416,7 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
             <div>
               <p className="font-semibold text-emerald-300">Perfiles y Restricciones del Club:</p>
               <p className="text-zinc-400 mt-0.5 leading-relaxed">
-                El <span className="text-white font-medium">Perfil Administrador</span> (<span className="text-white font-mono font-medium">admin</span>) tiene control total para altas, bajas, configuración de stock, proveedores y restablecimiento de datos. El <span className="text-white font-medium">Perfil Responsable de Turno</span> (<span className="text-white font-mono font-medium">responsable</span>) accede para registrar consumos de barra, consultar listas y actualizar existencias durante las jornadas de partido.
+                El <span className="text-white font-medium">Perfil Administrador</span> (<span className="text-white font-mono font-medium">admin</span>) tiene acceso completo al panel general, inventario y stock, proveedores, compras, eventos y restablecimiento de datos. El <span className="text-white font-medium">Perfil Responsable de Turno</span> (<span className="text-white font-mono font-medium">responsable</span>) accede únicamente a <span className="text-emerald-300 font-medium">Cierre de Jornada</span> (caja, limpieza, cierre del bar, llaves y avisos de reposición) y <span className="text-emerald-300 font-medium">Partidos & Eventos</span>.
               </p>
             </div>
           </div>

@@ -7,7 +7,6 @@ import { ShiftClosureView } from './components/ShiftClosureView';
 import { SuppliersView } from './components/SuppliersView';
 import { EventsView } from './components/EventsView';
 import { ShoppingListView } from './components/ShoppingListView';
-import { QuickBarModeModal } from './components/QuickBarModeModal';
 import { LoginView } from './components/LoginView';
 import { UserManagementModal } from './components/UserManagementModal';
 import { 
@@ -59,13 +58,15 @@ export default function App() {
   const [users, setUsers] = useState<User[]>(loadStoredUsers);
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
-  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const savedUser = loadCurrentUser();
+    return savedUser && savedUser.role !== 'admin' ? 'closure' : 'dashboard';
+  });
   const [products, setProducts] = useState<Product[]>(loadStoredProducts);
   const [suppliers, setSuppliers] = useState<Supplier[]>(loadStoredSuppliers);
   const [events, setEvents] = useState<RugbyEvent[]>(loadStoredEvents);
   const [logs, setLogs] = useState<StockLog[]>(loadStoredLogs);
   const [closures, setClosures] = useState<ShiftClosure[]>(loadStoredClosures);
-  const [isQuickBarOpen, setIsQuickBarOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Vertical sidebar state (collapsible & expandable)
@@ -100,6 +101,33 @@ export default function App() {
       }
       return next;
     });
+  }, []);
+
+  // App color theme ('dark' | 'light'), shared across all profiles
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    try {
+      const saved = localStorage.getItem('lurt_theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch {
+      // default
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('light', 'dark');
+    root.classList.add(theme);
+    root.dataset.theme = theme;
+    try {
+      localStorage.setItem('lurt_theme', theme);
+    } catch {
+      // ignore
+    }
+  }, [theme]);
+
+  const handleToggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
 
@@ -218,19 +246,19 @@ export default function App() {
     };
   }, []);
 
-  // Tab access control: Responsable de Turno can access 'dashboard', 'inventory', 'closure', and 'events' (suppliers & shopping remain admin only)
+  // Tab access control: Responsable de Turno can ONLY access 'closure' and 'events'
   const handleSelectTab = useCallback((tab: TabType) => {
-    if (currentUser?.role !== 'admin' && (tab === 'suppliers' || tab === 'shopping')) {
-      // Non-admin cannot switch to suppliers or shopping
+    if (currentUser?.role !== 'admin' && tab !== 'closure' && tab !== 'events') {
+      // Non-admin can only access Cierre de Jornada and Partidos & Eventos
       return;
     }
     setActiveTab(tab);
   }, [currentUser]);
 
-  // Fallback to dashboard if a non-admin enters an unauthorized tab
+  // Fallback to Cierre de Jornada if a non-admin enters an unauthorized tab
   useEffect(() => {
-    if (currentUser && currentUser.role !== 'admin' && (activeTab === 'suppliers' || activeTab === 'shopping')) {
-      setActiveTab('dashboard');
+    if (currentUser && currentUser.role !== 'admin' && activeTab !== 'closure' && activeTab !== 'events') {
+      setActiveTab('closure');
     }
   }, [currentUser, activeTab]);
 
@@ -253,6 +281,8 @@ export default function App() {
     setUsers(loadStoredUsers());
     setClosures(loadStoredClosures());
     if (user.role !== 'admin') {
+      setActiveTab('closure');
+    } else {
       setActiveTab('dashboard');
     }
     showToast(`¡Bienvenido, ${user.name}!`);
@@ -665,7 +695,13 @@ export default function App() {
 
   // If user is not authenticated, show Login View
   if (!currentUser) {
-    return <LoginView onLogin={handleLogin} />;
+    return (
+      <LoginView
+        onLogin={handleLogin}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+      />
+    );
   }
 
   const lowStockCount = products.filter(p => p.currentStock < p.minStock).length;
@@ -673,21 +709,21 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#070b09] text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-black relative">
       {/* Dynamic atmospheric moving background (aurora, pitch geometry & light mist) */}
-      <DynamicBackground intensity={bgIntensity} />
+      <DynamicBackground intensity={bgIntensity} theme={theme} />
 
       <div className="relative z-10 flex flex-col min-h-screen">
-        {/* Club Header (Brand, Quick Bar, Reset, User profile, Sidebar toggle) */}
+        {/* Club Header (Brand, Reset, User profile, Sidebar toggle) */}
         <Header
-
-        onToggleSidebarCollapse={handleToggleSidebar}
-        isSidebarCollapsed={isSidebarCollapsed}
-        onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
-        onOpenQuickBar={() => setIsQuickBarOpen(true)}
-        onResetData={handleResetData}
-        currentUser={currentUser}
-        onLogout={handleLogout}
-        onOpenUserModal={() => setIsUserModalOpen(true)}
-      />
+          onToggleSidebarCollapse={handleToggleSidebar}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          onResetData={handleResetData}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+          onOpenUserModal={() => setIsUserModalOpen(true)}
+          theme={theme}
+          onToggleTheme={handleToggleTheme}
+        />
 
       {/* Main Body with Vertical Collapsible Navigation Sidebar */}
       <div className="flex-1 flex flex-row min-h-0 w-full relative">
@@ -701,14 +737,13 @@ export default function App() {
           onToggleCollapse={handleToggleSidebar}
           isMobileOpen={isMobileSidebarOpen}
           onCloseMobile={() => setIsMobileSidebarOpen(false)}
-          onOpenQuickBar={() => setIsQuickBarOpen(true)}
           onOpenUserModal={() => setIsUserModalOpen(true)}
         />
 
         {/* Content Area & Footer */}
         <div className="flex-1 min-w-0 flex flex-col">
           <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
-            {activeTab === 'dashboard' && (
+            {currentUser.role === 'admin' && activeTab === 'dashboard' && (
               <DashboardView
                 products={products}
                 suppliers={suppliers}
@@ -720,7 +755,7 @@ export default function App() {
               />
             )}
 
-            {activeTab === 'inventory' && (
+            {currentUser.role === 'admin' && activeTab === 'inventory' && (
               <InventoryView
                 products={products}
                 suppliers={suppliers}
@@ -735,6 +770,7 @@ export default function App() {
             {activeTab === 'closure' && (
               <ShiftClosureView
                 closures={closures}
+                products={products}
                 currentUser={currentUser}
                 onAddClosure={handleAddClosure}
                 onDeleteClosure={handleDeleteClosure}
@@ -815,14 +851,6 @@ export default function App() {
           </footer>
         </div>
       </div>
-
-      {/* Quick Bar Mode Touch Modal */}
-      <QuickBarModeModal
-        isOpen={isQuickBarOpen}
-        onClose={() => setIsQuickBarOpen(false)}
-        products={products}
-        onQuickUpdateStock={handleQuickUpdateStock}
-      />
 
       {/* User Accounts & Permissions Modal (Admin Only) */}
       <UserManagementModal

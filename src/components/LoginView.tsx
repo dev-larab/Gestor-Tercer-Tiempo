@@ -17,20 +17,26 @@ import {
   Clock,
   ChevronRight,
   Cloud,
-  Sparkles
+  Sparkles,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { DynamicBackground } from './DynamicBackground';
 import { verifyUserPassword } from '../utils/security';
 
-
-
 interface LoginViewProps {
   onLogin: (user: User) => void;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 type ProfileType = 'admin' | 'responsable';
 
-export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
+export const LoginView: React.FC<LoginViewProps> = ({
+  onLogin,
+  theme = 'dark',
+  onToggleTheme
+}) => {
   const [selectedProfile, setSelectedProfile] = useState<ProfileType | null>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -167,16 +173,40 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen bg-[#070b09] text-zinc-100 flex flex-col justify-center items-center p-4 relative overflow-hidden selection:bg-emerald-500 selection:text-black">
       {/* Dynamic atmospheric moving background (aurora, pitch geometry & light mist) */}
-      <DynamicBackground intensity="full" />
+      <DynamicBackground intensity="full" theme={theme} />
 
+      {/* Top-right Theme Toggle Button */}
+      {onToggleTheme && (
+        <div className="fixed top-4 right-4 z-20">
+          <button
+            id="btn-login-theme-toggle"
+            type="button"
+            onClick={onToggleTheme}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#0e1612]/90 hover:bg-[#16231c] border border-emerald-900/60 hover:border-emerald-600/70 text-zinc-200 hover:text-emerald-300 transition-all text-xs font-semibold shadow-lg backdrop-blur-md cursor-pointer active:scale-95"
+            title={theme === 'dark' ? 'Cambiar a Modo Claro (Blanco)' : 'Cambiar a Modo Oscuro (Negro)'}
+          >
+            {theme === 'dark' ? (
+              <>
+                <Sun className="w-4 h-4 text-amber-400" />
+                <span>Modo Claro</span>
+              </>
+            ) : (
+              <>
+                <Moon className="w-4 h-4 text-emerald-400" />
+                <span>Modo Oscuro</span>
+              </>
+            )}
+          </button>
+        </div>
+      )}
 
       <div className="w-full max-w-md relative z-10">
         {/* Club Brand Shield & Header */}
         <div className="text-center mb-8">
           <div className="inline-flex relative mb-4 group">
             {/* Rugby Shield Badge */}
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-700 to-black p-0.5 shadow-2xl shadow-emerald-950/80 group-hover:scale-105 transition-transform duration-300">
-              <div className="w-full h-full bg-[#0d1411] rounded-[14px] flex items-center justify-center relative overflow-hidden border border-emerald-500/40">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 via-emerald-700 to-black p-0.5 shadow-2xl shadow-emerald-950/80 group-hover:scale-105 transition-transform duration-300 lurt-crest">
+              <div className="w-full h-full bg-[#0d1411] rounded-[14px] flex items-center justify-center relative overflow-hidden border border-emerald-500/40 lurt-crest">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-emerald-400/25 via-transparent to-black" />
                 <svg 
                   viewBox="0 0 24 24" 

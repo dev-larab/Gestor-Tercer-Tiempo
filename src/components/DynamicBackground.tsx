@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface DynamicBackgroundProps {
   intensity?: 'full' | 'subtle' | 'minimal';
+  theme?: 'dark' | 'light';
 }
 
 interface Particle {
@@ -52,8 +53,10 @@ const BubbleCluster: React.FC<{
 };
 
 export const DynamicBackground: React.FC<DynamicBackgroundProps> = ({
-  intensity = 'full'
+  intensity = 'full',
+  theme = 'dark'
 }) => {
+  const isLight = theme === 'light';
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef<{ x: number; y: number; active: boolean }>({
@@ -110,14 +113,22 @@ export const DynamicBackground: React.FC<DynamicBackgroundProps> = ({
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseleave', handleMouseLeave);
 
-    // Particle colors matching La Única's emerald, mint, electric green and stadium floodlight glow
-    const colors = [
-      'rgba(16, 185, 129,',   // Emerald
-      'rgba(52, 211, 153,',   // Mint
-      'rgba(5, 150, 105,',    // Forest
-      'rgba(110, 231, 183,',  // Bright mint
-      'rgba(240, 253, 244,'   // Floodlight white-green
-    ];
+    // Particle colors matching La Única's emerald palette in dark or light mode
+    const colors = isLight
+      ? [
+          'rgba(5, 150, 105,',    // Emerald 600
+          'rgba(16, 185, 129,',   // Emerald 500
+          'rgba(13, 148, 136,',   // Teal 600
+          'rgba(4, 120, 87,',     // Emerald 700
+          'rgba(217, 119, 6,'     // Subtle amber accent
+        ]
+      : [
+          'rgba(16, 185, 129,',   // Emerald
+          'rgba(52, 211, 153,',   // Mint
+          'rgba(5, 150, 105,',    // Forest
+          'rgba(110, 231, 183,',  // Bright mint
+          'rgba(240, 253, 244,'   // Floodlight white-green
+        ];
 
     const particleCount = intensity === 'full' ? (width < 768 ? 25 : 45) : (width < 768 ? 14 : 24);
     const particles: Particle[] = [];
@@ -218,28 +229,36 @@ export const DynamicBackground: React.FC<DynamicBackgroundProps> = ({
       window.removeEventListener('mouseleave', handleMouseLeave);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [reducedMotion, intensity]);
+  }, [reducedMotion, intensity, isLight]);
 
   return (
     <div 
       className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none"
       aria-hidden="true"
     >
-      {/* 1. Deep Athletic Base Gradient (UPNA green/black turf tones) */}
-      <div className="absolute inset-0 bg-[#080d0a] bg-gradient-to-b from-[#060a08] via-[#09110d] to-[#050806]" />
+      {/* 1. Athletic Base Gradient (Night stadium dark vs Bright daylight stadium white/mint) */}
+      <div
+        className={`absolute inset-0 transition-colors duration-300 ${
+          isLight
+            ? 'bg-[#f4f7f5] bg-gradient-to-b from-[#ffffff] via-[#f3f8f5] to-[#e9f2ec]'
+            : 'bg-[#080d0a] bg-gradient-to-b from-[#060a08] via-[#09110d] to-[#050806]'
+        }`}
+      />
 
       {/* 2. Micro Dot Matrix Pattern (tactical sports board feel) */}
       <div 
-        className="absolute inset-0 opacity-[0.14]"
+        className={`absolute inset-0 ${isLight ? 'opacity-[0.22]' : 'opacity-[0.14]'}`}
         style={{
-          backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(52, 211, 153, 0.25) 1px, transparent 0)',
+          backgroundImage: isLight
+            ? 'radial-gradient(circle at 1px 1px, rgba(5, 150, 105, 0.28) 1px, transparent 0)'
+            : 'radial-gradient(circle at 1px 1px, rgba(52, 211, 153, 0.25) 1px, transparent 0)',
           backgroundSize: '36px 36px'
         }}
       />
 
       {/* 3. Subtle Rugby Pitch Vector Geometry Lines */}
       <svg 
-        className="absolute inset-0 w-full h-full opacity-[0.06] text-emerald-400"
+        className={`absolute inset-0 w-full h-full ${isLight ? 'opacity-[0.08] text-emerald-600' : 'opacity-[0.06] text-emerald-400'}`}
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
@@ -269,27 +288,45 @@ export const DynamicBackground: React.FC<DynamicBackgroundProps> = ({
         <>
           {/* Top-Left Emerald Floodlight Orb */}
           <div 
-            className="absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full blur-[120px] opacity-40 bg-gradient-to-br from-emerald-500/25 via-emerald-600/15 to-transparent animate-aurora-drift-1 transform-gpu pointer-events-none"
+            className={`absolute -top-32 -left-32 w-[550px] h-[550px] rounded-full blur-[120px] animate-aurora-drift-1 transform-gpu pointer-events-none ${
+              isLight
+                ? 'opacity-45 bg-gradient-to-br from-emerald-300/35 via-teal-200/25 to-transparent'
+                : 'opacity-40 bg-gradient-to-br from-emerald-500/25 via-emerald-600/15 to-transparent'
+            }`}
           />
 
           {/* Bottom-Right Deep Teal & Forest Orb */}
           <div 
-            className="absolute -bottom-40 -right-40 w-[650px] h-[650px] rounded-full blur-[140px] opacity-35 bg-gradient-to-tl from-teal-500/20 via-emerald-700/15 to-transparent animate-aurora-drift-2 transform-gpu pointer-events-none"
+            className={`absolute -bottom-40 -right-40 w-[650px] h-[650px] rounded-full blur-[140px] animate-aurora-drift-2 transform-gpu pointer-events-none ${
+              isLight
+                ? 'opacity-40 bg-gradient-to-tl from-teal-300/35 via-emerald-200/25 to-transparent'
+                : 'opacity-35 bg-gradient-to-tl from-teal-500/20 via-emerald-700/15 to-transparent'
+            }`}
           />
 
           {/* Center-Top Breathing Stadium Floodlight */}
           <div 
-            className="absolute top-[18%] left-[45%] -translate-x-1/2 w-[600px] h-[380px] rounded-full blur-[130px] opacity-25 bg-gradient-to-b from-emerald-400/20 via-teal-600/10 to-transparent animate-aurora-breathe transform-gpu pointer-events-none"
+            className={`absolute top-[18%] left-[45%] -translate-x-1/2 w-[600px] h-[380px] rounded-full blur-[130px] animate-aurora-breathe transform-gpu pointer-events-none ${
+              isLight
+                ? 'opacity-35 bg-gradient-to-b from-emerald-200/35 via-teal-100/20 to-transparent'
+                : 'opacity-25 bg-gradient-to-b from-emerald-400/20 via-teal-600/10 to-transparent'
+            }`}
           />
 
           {/* Accent Gold/Amber Touch (representing the Club's 3rd half & trophy spirit) */}
           <div 
-            className="absolute bottom-[25%] left-[8%] w-[400px] h-[400px] rounded-full blur-[110px] opacity-15 bg-gradient-to-tr from-amber-500/15 via-emerald-500/10 to-transparent animate-aurora-drift-3 transform-gpu pointer-events-none"
+            className={`absolute bottom-[25%] left-[8%] w-[400px] h-[400px] rounded-full blur-[110px] animate-aurora-drift-3 transform-gpu pointer-events-none ${
+              isLight
+                ? 'opacity-25 bg-gradient-to-tr from-amber-300/30 via-emerald-200/20 to-transparent'
+                : 'opacity-15 bg-gradient-to-tr from-amber-500/15 via-emerald-500/10 to-transparent'
+            }`}
           />
 
           {/* Stadium Light Shimmer Wave passing across */}
           <div 
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-400/[0.035] to-transparent animate-field-sweep pointer-events-none"
+            className={`absolute inset-0 bg-gradient-to-r from-transparent to-transparent animate-field-sweep pointer-events-none ${
+              isLight ? 'via-emerald-500/[0.06]' : 'via-emerald-400/[0.035]'
+            }`}
           />
         </>
       )}
@@ -335,7 +372,9 @@ export const DynamicBackground: React.FC<DynamicBackgroundProps> = ({
 
       {/* 7. Vignette falloff to keep all UI cards and typography high-contrast & razor-sharp */}
       <div 
-        className="absolute inset-0 bg-radial from-transparent via-black/15 to-black/55 pointer-events-none z-[3]"
+        className={`absolute inset-0 bg-radial from-transparent pointer-events-none z-[3] ${
+          isLight ? 'via-emerald-950/[0.015] to-emerald-950/[0.05]' : 'via-black/15 to-black/55'
+        }`}
       />
 
     </div>
